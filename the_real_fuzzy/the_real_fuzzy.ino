@@ -9,14 +9,37 @@
 #include <FuzzyRuleAntecedent.h>
 #include <SoftwareSerial.h>
  
+ 
+SoftwareSerial bt(0,1);
+int motorA1 = 4;  //IN4//output1
+int motorA2 = 3;  //IN3//output1
+int motorB1 = 6;  //IN9//output
+int motorB2 = 7;  //IN10//output4
+int enableA = 8;  //
+int enableB = 9;
+const int sensorPin = A0;
+int sensorValue;
+int infraPin1 = 10;
+int infraPin2 = 11;
 // Step 1 -  Instantiating an object library
 Fuzzy* fuzzy = new Fuzzy();
-SoftwareSerial bt(2,3);
-
  
 void setup(){
  Serial.begin(9600);
  bt.begin(9600);
+ pinMode(infraPin1, INPUT);     // Inicializa el pin 10 como entrada digital.
+  pinMode(infraPin2, INPUT);     // Inicializa el pin 11 como entrada digital.
+  //pinMode (OUTPUT1, OUTPUT);     // Inicializa el pin 7  como entrada digital.
+  //pinMode (OUTPUT2, OUTPUT);     // Inicializa el pin 6 como entrada digital.
+  //pinMode (OUTPUT3, OUTPUT);     // Inicializa el pin 3 como entrada digital.
+  //pinMode (OUTPUT4, OUTPUT);     // Inicializa el pin 4 como entrada digital.  
+  pinMode(enableA, OUTPUT);
+  pinMode(enableB, OUTPUT);
+  pinMode(motorA1, OUTPUT);
+  pinMode(motorA2, OUTPUT);
+  pinMode(motorB1, OUTPUT);
+  pinMode(motorB2, OUTPUT);
+ 
  // Step 2 - Creating a FuzzyInput distance
  FuzzyInput* indicacion = new FuzzyInput(1);// With its ID in param
  
@@ -100,22 +123,103 @@ void loop(){
     output = fuzzy->defuzzify(1);
  Serial.println(output);
  }
+ blancoNegro();
  if(ouput==40){
    digitalWrite(IN4, 200);
  }if else(output==30){
-   digitalWrite(IN4,200);
-   digitalWrite(IN3, 200);
-   digitalWrite(IN9, 200);
-   digitalWrite(IN10, 200);
+   frio();
    
  }if else(output==20){
-   analogWrite(PWM_Derecho, 50);
-   analogWrite(PWM_Izquierdo, 50);
+   caliente();
  }if else(output==10){
-   analogWrite(PWM_Derecho, 25);
-   analogWrite(PWM_Izquierdo, 25);
+   muyCaliente();
  }
  
  delay(100);
 }
 
+void muyFrio()
+{
+  digitalWrite(motorA1,0);
+  digitalWrite(motorA2,0);
+  digitalWrite(motorB1,1);
+  digitalWrite(motorB2,0);
+  analogWrite(enableA,175);//Velocidad motor derecho 1750
+  analogWrite(enableB,200);//Velocidad motor izquierdo 200
+  Serial.println("Derecha");
+}
+
+void frio()
+{
+  digitalWrite(motorA1,200);
+   digitalWrite(motorA2, 200);
+   digitalWrite(motorB1, 200);
+   digitalWrite(motorB2, 200);
+}
+
+void caliente()
+{
+  analogWrite(enableA, 50);
+   analogWrite(enableB, 50);
+}
+
+void muyCaliente()
+{
+  analogWrite(enableA, 25);
+  analogWrite(enableB, 25);
+}
+void blancoNegro() 
+{ 
+   //mandar mensaje a puerto serie en función del valor leido
+   //Serial.println(sensorValue);
+  if(valorInfra1==0)   // Si la lectura del infrarrojos#1 es 0, entonces se cumplira una de las siguientes condiciones:
+  {
+  if(valorInfra2==1)  // Si la lectura del infrarrojos#2 es 0, es decir los dos sensores estan sobre la linea negra, entonces los dos motores avanzaran en linea recta.
+  {
+  //Programación para movimiento de reversa
+  digitalWrite(motorA2,1);
+  digitalWrite(motorA1,0);
+  digitalWrite(motorB1,0);
+  digitalWrite(motorB2,1); 
+  analogWrite(enableA,175);//Velocidad motor derecho 200
+  analogWrite(enableB,120);//Velocidad motor izquierdo 200
+  Serial.println("Adelante");
+
+  }
+  else // Si la lectura del infrarrojos#2 es 1, el sensor#1 esta sobre la linea negra y el sensor#2 esta fuera de la linea negra, entonces solo una rueda gira y esto causara el giro.
+  {
+  //Programación para giro a la izquierda
+  digitalWrite(motorA1,0);
+  digitalWrite(motorA2,0);
+  digitalWrite(motorB1,0);
+  digitalWrite(motorB2,1); 
+  analogWrite(enableA,175);//Velocidad motor derecho 200
+  analogWrite(enableB,75);//Velocidad motor izquierdo 200
+  Serial.println("Rutina");
+  }
+  }
+  else // Si la lectura del infrarrojos#1 no es 0, sera 1, se daran las siguientes posibilidades:
+  {if(valorInfra2==0)  // Como el sensor#1 esta fuera de la linea negra y el sensor#2 esta sobre la linea negra, entonces solo una rueda gira y esto causara el giro.
+  /*{
+  //Programación para giro a la derecha
+  digitalWrite(OUTPUT3,0);
+  digitalWrite(OUTPUT4,0);
+  digitalWrite(OUTPUT1,1);
+  digitalWrite(OUTPUT2,0);
+  analogWrite(PWM_Derecho,175);//Velocidad motor derecho 200
+  analogWrite(PWM_Izquierdo,200);//Velocidad motor izquierdo 200
+  Serial.println("Derecha");
+  }*/
+ // else
+ { // si ambos sensores dan lectura 1, los dos estan fuera de la linea negra, para que vuelva a su trayectoria tiene que retroceder.
+  //Programación para movimiento derecho
+  digitalWrite(motorA1,0);
+  digitalWrite(motorA2,1);
+  digitalWrite(motorB1,1);
+  digitalWrite(motorB2,0);
+  analogWrite(enableA,130);//Velocidad motor derecho 200
+  analogWrite(enableB,200);//Velocidad motor izquierdo 200
+  Serial.println("Reversa");
+  }
+  }
+}

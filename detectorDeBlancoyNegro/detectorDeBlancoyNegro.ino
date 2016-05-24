@@ -1,3 +1,8 @@
+
+
+
+
+
 /* Programa para una sola línea*/
 int infraPin1 = 10;    // pin del infrarrojos utilizado como entrada digital en el lado izquierdo(#1).
 int infraPin2 = 11;    // pin del infrarrojos utilizado como entrada digital en el lado derecho(#2).
