@@ -21,6 +21,10 @@ const int sensorPin = A0;
 int sensorValue;
 int infraPin1 = 10;
 int infraPin2 = 11;
+int valorInfra2 = 0;
+int valorInfra1 = 0;
+
+
 // Step 1 -  Instantiating an object library
 Fuzzy* fuzzy = new Fuzzy();
  
@@ -124,14 +128,15 @@ void loop(){
  Serial.println(output);
  }
  blancoNegro();
- if(ouput==40){
-   digitalWrite(IN4, 200);
- }if else(output==30){
+ if(output==40){
+   muyFrio();
+ }else if(output==30)
+ {
    frio();
    
- }if else(output==20){
+ }else if(output==20){
    caliente();
- }if else(output==10){
+ }else if(output==10){
    muyCaliente();
  }
  
